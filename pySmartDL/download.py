@@ -13,22 +13,11 @@ def download(url, dest, requestArgs=None, startByte=0, endByte=None, timeout=4, 
     logger.info("Downloading '{}' to '{}'...".format(url, dest))
     try:
         urlObj = urllib.request.urlopen(req, timeout=timeout)
-    except urllib.error.HTTPError as e:
-        if e.code == 416:
-            '''
-            HTTP 416 Error: Requested Range Not Satisfiable. Happens when we ask
-            for a range that is not available on the server. It will happen when
-            the server will try to send us a .html page that means something like
-            "you opened too many connections to our server". If this happens, we
-            will wait for the other threads to finish their connections and try again.
-            '''
-            
-            if retries > 0:
-                logger.warning("Thread didn't got the file it was expecting. Retrying ({} times left)...".format(retries-1))
-                time.sleep(5)
-                return download(url, dest, requestArgs, startByte, endByte, timeout, shared_var, thread_shared_cmds, logger, retries-1)
-            else:
-                raise
+    except Exception as e:
+        if retries > 0:
+            logger.warning("Thread didn't got the file it was expecting. Retrying ({} times left)...".format(retries-1))
+            time.sleep(5)
+            return download(url, dest, requestArgs, startByte, endByte, timeout, shared_var, thread_shared_cmds, logger, retries-1)
         else:
             raise
     
